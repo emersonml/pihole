@@ -1,0 +1,34 @@
+version: '3.8'
+
+services:
+  pihole:
+    container_name: pihole
+    image: pihole/pihole:latest
+    environment:
+      TZ: 'America/Maceio'
+      WEBPASSWORD: ${SENHA}               # Senha para a interface web
+      PIHOLE_DNS_: '186.249.48.185;8.8.4.4'         # Servidores DNS Upstream (Google DNS neste exemplo)
+      DNSMASQ_LISTENING: 'all'               # Pi-hole escuta em todas as interfaces
+      ServerIP: '10.53.0.2'                # IP do servidor Pi-hole (ajustar conforme necessário)
+      VIRTUAL_HOST: 'pi.hole'                # Host virtual
+      FTLCONF_REPLY_ADDR4: '10.53.0.2'     # Endereço de resposta IPv4
+    volumes:
+      - '/srv/volumes/etc-pihole:/etc/pihole'
+      - '/srv/volumes/etc-dnsmasq.d:/etc/dnsmasq.d'
+    ports:
+      - '53:53/tcp'
+      - '53:53/udp'
+      - '80:80/tcp'
+    restart: unless-stopped
+    cap_add:
+      - NET_ADMIN                            # Necessário para operações de rede
+    networks:
+      pihole_net:
+        ipv4_address: 10.53.0.2
+
+networks:
+  pihole_net:
+    driver: bridge
+    ipam:
+      config:
+        - subnet: 10.53.0.0/24
